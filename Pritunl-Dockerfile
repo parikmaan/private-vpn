@@ -1,0 +1,22 @@
+FROM ubuntu:bionic
+
+RUN apt-get update -y
+RUN apt-get install -y gnupg2
+RUN apt-get install -y ca-certificates
+
+COPY --chown=root:root ["install-vpn.sh", "/root"]
+RUN tr -d '\r' </root/install-vpn.sh >/root/install-vpn.sh.new && mv /root/install-vpn.sh.new /root/install-vpn.sh
+RUN bash /root/install-vpn.sh
+
+COPY --chown=root:root ["start-vpn.sh", "/root"]
+RUN chmod +X /root/start-vpn.sh
+RUN tr -d '\r' </root/start-vpn.sh >/root/start-vpn.sh.new && mv /root/start-vpn.sh.new /root/start-vpn.sh
+
+EXPOSE 80
+EXPOSE 443
+EXPOSE 1194
+EXPOSE 1194/udp
+
+ENTRYPOINT ["sh", "/root/start-vpn.sh"]
+
+CMD ["/usr/bin/tail", "-f","/var/log/pritunl.log"]

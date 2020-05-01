@@ -1,0 +1,44 @@
+version: '3.7'
+services:
+    mongodb_container:
+        container_name: MongoDB
+        image: mongo:4.2.6
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: admin
+            MONGO_INITDB_ROOT_PASSWORD: password
+        ports:
+            - 10001:27017
+        volumes:
+            - mongodb_data_container:/data/db
+        networks:
+            - pritunl_network
+        restart: always
+    pritunl_container:
+        container_name: Pritunl
+        build:
+            context: .
+            dockerfile: Pritunl-Dockerfile
+        image: dummy:latest
+        depends_on:
+            - mongodb_container
+        ports:
+            - 80:80
+            - 443:443
+            - 1194:1194/udp
+            - 1194:1194/tcp
+        volumes:
+            - pritunl_data:/var/lib/pritunl
+        stdin_open: true
+        tty: true
+        networks:
+            - pritunl_network
+        restart: always
+
+volumes:
+    mongodb_data_container:
+    pritunl_data:
+
+
+networks:
+    pritunl_network:
+        driver: bridge
